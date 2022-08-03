@@ -26,7 +26,6 @@ const val CACHE_TAG = "myCachedEngine"
 class MainActivity : FlutterActivity(), MethodChannel.MethodCallHandler,
     BasicMessageChannel.MessageHandler<Any?> {
     lateinit var overlayChannel: MethodChannel
-    lateinit var flagsChannel: MethodChannel
     lateinit var messageChannel: BasicMessageChannel<Any?>
     lateinit var result: MethodChannel.Result
     val REQUEST_CODE_FOR_OVERLAY_PERMISSION = 1009
@@ -35,7 +34,6 @@ class MainActivity : FlutterActivity(), MethodChannel.MethodCallHandler,
         super.configureFlutterEngine(flutterEngine)
 
         overlayChannel = MethodChannel(flutterEngine.dartExecutor.binaryMessenger, OVER_LAY_CHANNEL)
-        flagsChannel = MethodChannel(flutterEngine.dartExecutor.binaryMessenger, FLAGS_CHANNEL)
         messageChannel = BasicMessageChannel(
             flutterEngine.dartExecutor.binaryMessenger,
             MESSAGE_CHANNEL,
@@ -43,7 +41,6 @@ class MainActivity : FlutterActivity(), MethodChannel.MethodCallHandler,
         )
 
         overlayChannel.setMethodCallHandler(this)
-        flagsChannel.setMethodCallHandler(this)
         messageChannel.setMessageHandler(this)
 
         WindowConfig.messenger = messageChannel
@@ -136,6 +133,9 @@ class MainActivity : FlutterActivity(), MethodChannel.MethodCallHandler,
                 } else {
                     result.success(true)
                 }
+            }
+            "isActive"->{
+               result.success(WindowConfig.serviceIsRunning)
             }
         }
     }

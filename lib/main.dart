@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:tub_app_overlays/pip_flutter.dart';
+import 'package:tub_app_overlays/video_overlay.dart';
 
 import 'overlay.dart';
 
@@ -12,7 +13,7 @@ void showPIPScreen() {
   runApp(
     const MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: OverlayScreen(),
+      home: VideoOverlays(),
     ),
   );
 }
@@ -52,6 +53,7 @@ class _AppHomeState extends State<AppHome> {
 
   @override
   Widget build(BuildContext context) {
+    var density = MediaQuery.of(context).devicePixelRatio;
     return Container(
       color: Colors.white,
       child: Column(
@@ -67,8 +69,8 @@ class _AppHomeState extends State<AppHome> {
                     alignment: OverlayAlignment.centerLeft,
                     visibility: NotificationVisibility.visibilityPrivate,
                     positionGravity: PositionGravity.auto,
-                    width: 300,
-                    height: 200);
+                    width: 300.dpToPx(density),
+                    height: (300*9~/16).dpToPx(density));
               },
               child: Text("show")),
           TextButton(
@@ -87,6 +89,13 @@ class _AppHomeState extends State<AppHome> {
                 print("${rs}");
               },
               child: Text("request permission")),
+
+          TextButton(
+              onPressed: () async {
+                var rs = await PipFlutter.isActive();
+                print("$rs");
+              },
+              child: Text("check service active")),
         ],
       ),
     );

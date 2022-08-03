@@ -12,18 +12,14 @@ class PipFlutter {
 
   static final StreamController _controller = StreamController.broadcast();
   static const MethodChannel _channel =
-  MethodChannel("com.example.tub_app_overlays/overlayChannel");
-  static const MethodChannel _flagChannel =
-  MethodChannel("com.example.tub_app_overlays/flag_channel");
+      MethodChannel("com.example.tub_app_overlays/overlayChannel");
 
-  static const BasicMessageChannel _overlayMessageChannel =
-  BasicMessageChannel("com.example.tub_app_overlays/overlay_messenger", JSONMessageCodec());
-
+  static const BasicMessageChannel _overlayMessageChannel = BasicMessageChannel(
+      "com.example.tub_app_overlays/overlay_messenger", JSONMessageCodec());
 
   static void disposeOverlayListener() {
     _controller.close();
   }
-
 
   static Future<void> show({
     int height = matchParent,
@@ -37,50 +33,51 @@ class PipFlutter {
     PositionGravity positionGravity = PositionGravity.none,
   }) async {
     await _channel.invokeMethod(
-        'show', {
-      "height": height,
-      "width": width,
-      "alignment": alignment.name,
-      "flag": flag.name,
-      "overlayTitle": overlayTitle,
-      "overlayContent": overlayContent,
-      "enableDrag": enableDrag,
-      "notificationVisibility": visibility.name,
-      "positionGravity": positionGravity.name,
-    },
+      'show',
+      {
+        "height": height,
+        "width": width,
+        "alignment": alignment.name,
+        "flag": flag.name,
+        "overlayTitle": overlayTitle,
+        "overlayContent": overlayContent,
+        "enableDrag": enableDrag,
+        "notificationVisibility": visibility.name,
+        "positionGravity": positionGravity.name,
+      },
     );
   }
-
 
   static Future<void> close() async {
-    await _channel.invokeMethod(
-        'close'
-    );
+    await _channel.invokeMethod('close');
   }
-
 
   static Future<void> putArguments(dynamic arguments) async {
     return await _overlayMessageChannel.send(arguments);
   }
 
-
-  static Future<bool> requestP() async {
-   return await _channel.invokeMethod(
-        'requestP'
-    );
+  static Future<bool> isActive() async {
+    return await _channel.invokeMethod("isActive");
   }
 
+  static Future<bool> requestP() async {
+    return await _channel.invokeMethod('requestP');
+  }
 
   static Stream<dynamic> get overlayListener {
     _overlayMessageChannel.setMessageHandler((message) async {
-      print("message ${message.toString()}");
-      _controller.add(message);
-      return message;
+      if (message.toString() == "dispose") {
+        _controller.add(ListenOverlay.onDispose);
+      } else {
+        _controller.add(message);
+      }
     });
 
     return _controller.stream;
   }
 }
+
+enum ListenOverlay { onDispose, videoListener }
 
 /// Placement of overlay within the screen.
 enum OverlayAlignment {

@@ -14,6 +14,7 @@ import android.graphics.Point
 import android.os.Build
 import android.os.Handler
 import android.os.IBinder
+import android.util.DisplayMetrics
 import android.util.Log
 import android.view.MotionEvent
 import android.view.View
@@ -26,6 +27,7 @@ import io.flutter.plugin.common.BasicMessageChannel
 import io.flutter.plugin.common.JSONMessageCodec
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
+import kotlin.math.roundToInt
 
 
 const val INTENT_EXTRA_IS_CLOSE_WINDOW = "IsCloseWindow"
@@ -36,10 +38,6 @@ class OverlayService : Service(), View.OnTouchListener {
 
     private var windowManager: WindowManager? = null
     var flutterView: FlutterView? = null
-    private val flutterChannel = MethodChannel(
-        FlutterEngineCache.getInstance()[CACHE_TAG]!!.dartExecutor,
-        FLAGS_CHANNEL
-    )
     private val overlayMessageChannel = BasicMessageChannel(
         FlutterEngineCache.getInstance()[CACHE_TAG]!!.dartExecutor,
         MESSAGE_CHANNEL,
@@ -49,11 +47,8 @@ class OverlayService : Service(), View.OnTouchListener {
         WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE or WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
                 WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS or WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN
 
-    private val mAnimationHandler: Handler = Handler()
-
     private var lastX = 0f
     private var lastY = 0f
-    private var lastYPosition = 0
     private var dragging = false
     private val MAXIMUM_OPACITY_ALLOWED_FOR_S_AND_HIGHER = 0.8f
     private val szWindow: Point = Point()
@@ -81,42 +76,36 @@ class OverlayService : Service(), View.OnTouchListener {
         }
         WindowConfig.serviceIsRunning = true
         val engine = FlutterEngineCache.getInstance()[CACHE_TAG]
-        engine!!.lifecycleChannel.appIsResumed()
-        flutterView = FlutterView(
-            applicationContext, FlutterTextureView(
-                applicationContext
+        if (engine != null) {
+            engine.lifecycleChannel.appIsResumed()
+
+            flutterView = FlutterView(
+                applicationContext, FlutterTextureView(
+                    applicationContext
+                )
             )
-        )
-        flutterView?.let { view ->
-            view.attachToFlutterEngine(FlutterEngineCache.getInstance()[CACHE_TAG]!!)
-            view.fitsSystemWindows = true
-            view.isFocusable = true
-            view.isFocusableInTouchMode = true
-            view.setBackgroundColor(Color.TRANSPARENT)
-            view.setOnTouchListener(this)
+            flutterView?.let { view ->
+                view.attachToFlutterEngine(FlutterEngineCache.getInstance()[CACHE_TAG]!!)
+                view.fitsSystemWindows = true
+                view.isFocusable = true
+                view.isFocusableInTouchMode = true
+                view.setBackgroundColor(Color.TRANSPARENT)
+                view.setOnTouchListener(this)
+            }
         }
 
-
-        flutterChannel.setMethodCallHandler { call: MethodCall, result: MethodChannel.Result? ->
-//            if (call.method == "updateFlag") {
-//                val flag = call.argument<Any>("flag").toString()
-//                updateOverlayFlag(result, flag)
-//            } else if (call.method == "resizeOverlay") {
-//                val width = call.argument<Int>("width")!!
-//                val height = call.argument<Int>("height")!!
-//                resizeOverlay(width, height, result)
-//            }
-        }
         overlayMessageChannel.setMessageHandler { message: Any?, reply: BasicMessageChannel.Reply<Any?>? ->
-            Log.d("ManhNQ", "SERVICE -onStartCommand: ${message.toString()}")
+//            Log.d("ManhNQ", "SERVICE -onStartCommand: ${message.toString()}")
             WindowConfig.messenger.send(message)
         }
+
         windowManager = getSystemService(WINDOW_SERVICE) as WindowManager
         val layoutType: Int = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
         } else {
             WindowManager.LayoutParams.TYPE_PHONE
         }
+
         windowManager?.defaultDisplay?.getSize(szWindow)
         val params = WindowManager.LayoutParams(
             WindowConfig.width,
@@ -130,7 +119,6 @@ class OverlayService : Service(), View.OnTouchListener {
             params.alpha = MAXIMUM_OPACITY_ALLOWED_FOR_S_AND_HIGHER
         }
         params.gravity = WindowConfig.gravity
-
         windowManager?.addView(flutterView, params)
         return START_STICKY
     }
@@ -184,14 +172,23 @@ class OverlayService : Service(), View.OnTouchListener {
 
     override fun onDestroy() {
         super.onDestroy()
+        WindowConfig.messenger.send("dispose")
         WindowConfig.serviceIsRunning = false
         val notificationManager =
             applicationContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         notificationManager.cancel(NOTIFICATION_ID)
     }
 
+    fun Context.pxToDp(px: Float): Int {
+        return (px / resources.displayMetrics.density).roundToInt()
+    }
 
     override fun onTouch(v: View?, event: MotionEvent?): Boolean {
+        val displayMetrics = DisplayMetrics()
+        windowManager?.defaultDisplay?.getMetrics(displayMetrics)
+        val wPx = displayMetrics.widthPixels
+        val h = this.baseContext.pxToDp(displayMetrics.heightPixels.toFloat())
+
         if (windowManager != null && WindowConfig.enableDrag) {
             val params = flutterView?.layoutParams as WindowManager.LayoutParams
 
@@ -213,8 +210,22 @@ class OverlayService : Service(), View.OnTouchListener {
                     lastY = event.rawY
                     val xx = params.x + dx.toInt()
                     val yy = params.y + dy.toInt()
-                    params.x = xx
-                    params.y = yy
+                    params.x = if (xx < 0) {
+                        0
+                    } else if (xx > (wPx - params.width)) {
+                        wPx - params.width
+                    } else {
+                        xx
+                    }
+
+                    params.y = if (yy > h) {
+                        h
+                    } else if (yy < (-h)) {
+                        -h
+                    } else {
+                        yy
+                    }
+
                     windowManager?.updateViewLayout(flutterView, params)
                     dragging = true
                 }
@@ -233,4 +244,8 @@ class OverlayService : Service(), View.OnTouchListener {
         return false;
     }
 
+}
+
+fun Context.dpToPx(dp: Float): Float {
+    return (dp * resources.displayMetrics.density + 0.5f)
 }
