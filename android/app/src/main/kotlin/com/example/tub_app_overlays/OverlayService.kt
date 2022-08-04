@@ -34,27 +34,24 @@ const val RATIO_VIDEO = 16f / 9f
 class OverlayService : Service(), View.OnTouchListener {
 
     private var windowManager: WindowManager? = null
-    var flutterView: FlutterView? = null
+    private var flutterView: FlutterView? = null
     private val overlayMessageChannel = BasicMessageChannel(
         FlutterEngineCache.getInstance()[CACHE_TAG]!!.dartExecutor,
         MESSAGE_CHANNEL,
         JSONMessageCodec.INSTANCE
     )
-    private val clickableFlag: Int =
-        WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE or WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
-                WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS or WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN
 
     private var lastX = 0f
     private var lastY = 0f
     private var dragging = false
     private val MAXIMUM_OPACITY_ALLOWED_FOR_S_AND_HIGHER = 0.8f
     private val szWindow: Point = Point()
-    private lateinit var scaleGestureDetector: ScaleGestureDetector
+    var scaleGestureDetector: ScaleGestureDetector? = null
     private var mScaleFactor = 1f
 
-    val displayMetrics = DisplayMetrics()
-    val width: Int get() = displayMetrics.widthPixels
-    val height: Int get() = displayMetrics.heightPixels
+    private val displayMetrics = DisplayMetrics()
+    private val width: Int get() = displayMetrics.widthPixels
+    private val height: Int get() = displayMetrics.heightPixels
 
     override fun onBind(intent: Intent?): IBinder? {
         return null
@@ -93,7 +90,7 @@ class OverlayService : Service(), View.OnTouchListener {
                 view.isFocusable = true
                 view.isFocusableInTouchMode = true
                 view.setBackgroundColor(Color.TRANSPARENT)
-                scaleGestureDetector = ScaleGestureDetector(flutterView?.context, scaleListener)
+                scaleGestureDetector = ScaleGestureDetector(this, scaleListener)
 
                 view.setOnTouchListener(this)
             }
@@ -205,13 +202,14 @@ class OverlayService : Service(), View.OnTouchListener {
 
     private val scaleListener = object : ScaleGestureDetector.SimpleOnScaleGestureListener() {
         override fun onScale(detector: ScaleGestureDetector): Boolean {
+            Log.d("ManhNQ", "onScale: $mScaleFactor")
             mScaleFactor *= detector.scaleFactor
 
             mScaleFactor = 0.5f.coerceAtLeast(mScaleFactor.coerceAtMost(2f))
             val params = flutterView?.layoutParams as WindowManager.LayoutParams
 
             mScaleFactor = if (mScaleFactor > (width.toFloat() / params.width.toFloat())) {
-                (width.toFloat() / params.width.toFloat())
+                width.toFloat() / params.width.toFloat()
             } else {
                 mScaleFactor
             }
@@ -223,7 +221,7 @@ class OverlayService : Service(), View.OnTouchListener {
 
 
     override fun onTouch(v: View?, event: MotionEvent?): Boolean {
-        scaleGestureDetector.onTouchEvent(event)
+        scaleGestureDetector?.onTouchEvent(event)
 
         if (windowManager != null && WindowConfig.enableDrag) {
             val params = flutterView?.layoutParams as WindowManager.LayoutParams
