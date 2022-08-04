@@ -150,6 +150,7 @@ class OverlayService : Service(), View.OnTouchListener {
                 .setContentText(WindowConfig.overlayContent)
                 .setSmallIcon(if (notifyIcon == 0) R.drawable.arrow_up_float else notifyIcon)
                 .setContentIntent(pendingIntent)
+                .setVibrate(longArrayOf(0L))
                 .setVisibility(WindowConfig.notificationVisibility)
                 .build()
         startForeground(NOTIFICATION_ID, notification)

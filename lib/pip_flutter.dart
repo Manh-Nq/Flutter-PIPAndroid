@@ -21,10 +21,11 @@ class PipFlutter {
     _controller.close();
   }
 
-  static Future<bool?> show({
+  static Future<bool?> _show({
     int height = matchParent,
     int width = matchParent,
-    NotificationVisibility visibility = NotificationVisibility.visibilityPrivate,
+    NotificationVisibility visibility =
+        NotificationVisibility.visibilityPrivate,
     String overlayTitle = "overlay activated",
     String? overlayContent,
     bool enableDrag = true,
@@ -40,6 +41,36 @@ class PipFlutter {
         "notificationVisibility": visibility.name,
       },
     );
+  }
+
+  static Future<bool?> showPopup(
+    String url,
+    int position, {
+    int height = matchParent,
+    int width = matchParent,
+    NotificationVisibility visibility =
+        NotificationVisibility.visibilityPrivate,
+    String overlayTitle = "overlay activated",
+    String? overlayContent,
+    bool enableDrag = true,
+  }) async {
+    bool? isShowSuccess;
+    var isActive = await PipFlutter.isActive();
+    if (!isActive) {
+      isShowSuccess = await _show(
+          overlayTitle: "Tub App",
+          overlayContent: 'Overlay Video',
+          width: width,
+          height: height);
+
+      await PipFlutter.pushArguments(
+        {
+          "url": url,
+          "position": position,
+        },
+      );
+    }
+    return isShowSuccess;
   }
 
   static Future<void> close() async {

@@ -86,19 +86,14 @@ class _AppHomeState extends State<AppHome> {
         },
         showOverlays: () async {
           _controller.pause();
-          var isActive = await PipFlutter.isActive();
-          if (!isActive) {
-            await PipFlutter.show(
-                overlayTitle: "com.example.tub_app_overlays",
-                overlayContent: 'Overlay Enabled',
-                width: 300.dpToPx(density),
-                height: (300 * 9 ~/ 16).dpToPx(density));
-
-            await PipFlutter.pushArguments({
-              "url": url,
-              "position": _controller.value.position.inMilliseconds,
-            });
-          }
+          await PipFlutter.showPopup(
+            url,
+            _controller.value.position.inMilliseconds,
+            overlayTitle: "Tub App",
+            overlayContent: 'Overlay Video',
+            width: 300.dpToPx(density),
+            height: (300 * 9 ~/ 16).dpToPx(density),
+          );
         });
   }
 }
@@ -167,51 +162,6 @@ Widget videoScreen({
           Expanded(flex: 1, child: listVideos(fakeItems()))
         ],
       ),
-    ),
-  );
-}
-
-Widget mainContainer(BuildContext context) {
-  var density = MediaQuery.of(context).devicePixelRatio;
-  return Container(
-    color: Colors.white,
-    child: Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        TextButton(
-            onPressed: () async {
-              await PipFlutter.show(
-                  enableDrag: true,
-                  overlayTitle: "com.example.tub_app_overlays",
-                  overlayContent: 'Overlay Enabled',
-                  visibility: NotificationVisibility.visibilityPrivate,
-                  width: 300.dpToPx(density),
-                  height: (300 * 9 ~/ 16).dpToPx(density));
-            },
-            child: Text("show")),
-        TextButton(
-            onPressed: () async {
-              await PipFlutter.close();
-            },
-            child: Text("close")),
-        TextButton(
-            onPressed: () async {
-              await PipFlutter.pushArguments("this is Data from appHome");
-            },
-            child: Text("share")),
-        TextButton(
-            onPressed: () async {
-              var rs = await PipFlutter.requestP();
-              print("${rs}");
-            },
-            child: Text("request permission")),
-        TextButton(
-            onPressed: () async {
-              var rs = await PipFlutter.isActive();
-              print("$rs");
-            },
-            child: Text("check service active")),
-      ],
     ),
   );
 }
