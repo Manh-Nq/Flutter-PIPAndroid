@@ -53,12 +53,16 @@ class _AppHomeState extends State<AppHome> {
     // TODO: implement initState
     super.initState();
     _controller = VideoPlayerController.asset(url)
-      ..addListener(() async {
-        setState(() {
-          currentPosition =
-              _controller.value.position.inMilliseconds.toString();
-        });
-      })
+      ..addListener(
+        () async {
+          setState(
+            () {
+              currentPosition =
+                  _controller.value.position.inMilliseconds.toString();
+            },
+          );
+        },
+      )
       ..initialize().then((value) {
         setState(() {});
       });
