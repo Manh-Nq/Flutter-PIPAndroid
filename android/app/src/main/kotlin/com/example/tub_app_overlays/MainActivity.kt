@@ -12,6 +12,7 @@ import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.embedding.engine.FlutterEngineCache
 import io.flutter.embedding.engine.FlutterEngineGroup
 import io.flutter.embedding.engine.dart.DartExecutor.DartEntrypoint
+import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.plugin.common.BasicMessageChannel
 import io.flutter.plugin.common.JSONMessageCodec
 import io.flutter.plugin.common.MethodCall
@@ -64,7 +65,8 @@ class MainActivity : FlutterActivity(), MethodChannel.MethodCallHandler,
         when (call.method) {
             "show" -> {
                 if (WindowConfig.serviceIsRunning) {
-                    result.success(null)
+                    result.success(false)
+                    Log.d("ManhNQ", "showOverlays: return ${WindowConfig.serviceIsRunning}")
                     return
                 } else {
                     Log.d("ManhNQ", "onMethodCall: showFunction")
@@ -103,7 +105,7 @@ class MainActivity : FlutterActivity(), MethodChannel.MethodCallHandler,
                     else
                         startService(intent)
 
-                    result.success(null)
+                    result.success(true)
                 }
 
             }
@@ -122,9 +124,6 @@ class MainActivity : FlutterActivity(), MethodChannel.MethodCallHandler,
                 }
                 return
             }
-            "putArguments" -> {
-                Log.d("ManhNQ", "onMethodCall: putArguments")
-            }
             "requestP" -> {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                     val intent = Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION)
@@ -134,8 +133,8 @@ class MainActivity : FlutterActivity(), MethodChannel.MethodCallHandler,
                     result.success(true)
                 }
             }
-            "isActive"->{
-               result.success(WindowConfig.serviceIsRunning)
+            "isActive" -> {
+                result.success(WindowConfig.serviceIsRunning)
             }
         }
     }
@@ -171,4 +170,5 @@ class MainActivity : FlutterActivity(), MethodChannel.MethodCallHandler,
         }
 
     }
+
 }

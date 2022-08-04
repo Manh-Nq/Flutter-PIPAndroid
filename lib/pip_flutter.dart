@@ -21,7 +21,7 @@ class PipFlutter {
     _controller.close();
   }
 
-  static Future<void> show({
+  static Future<bool?> show({
     int height = matchParent,
     int width = matchParent,
     OverlayAlignment alignment = OverlayAlignment.center,
@@ -52,7 +52,7 @@ class PipFlutter {
     await _channel.invokeMethod('close');
   }
 
-  static Future<void> putArguments(dynamic arguments) async {
+  static Future<void> pushArguments(dynamic arguments) async {
     return await _overlayMessageChannel.send(arguments);
   }
 
@@ -66,18 +66,12 @@ class PipFlutter {
 
   static Stream<dynamic> get overlayListener {
     _overlayMessageChannel.setMessageHandler((message) async {
-      if (message.toString() == "dispose") {
-        _controller.add(ListenOverlay.onDispose);
-      } else {
-        _controller.add(message);
-      }
+      _controller.add(message);
     });
 
     return _controller.stream;
   }
 }
-
-enum ListenOverlay { onDispose, videoListener }
 
 /// Placement of overlay within the screen.
 enum OverlayAlignment {
