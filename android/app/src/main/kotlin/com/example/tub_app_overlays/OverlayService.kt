@@ -15,10 +15,7 @@ import android.os.Build
 import android.os.IBinder
 import android.util.DisplayMetrics
 import android.util.Log
-import android.view.MotionEvent
-import android.view.ScaleGestureDetector
-import android.view.View
-import android.view.WindowManager
+import android.view.*
 import androidx.core.app.NotificationCompat
 import io.flutter.embedding.android.FlutterTextureView
 import io.flutter.embedding.android.FlutterView
@@ -118,15 +115,15 @@ class OverlayService : Service(), View.OnTouchListener {
                 WindowConfig.width,
                 WindowConfig.height,
                 layoutType,
-                WindowConfig.flag or WindowManager.LayoutParams.FLAG_SECURE or WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
+                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or WindowManager.LayoutParams.FLAG_SECURE or WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
                 PixelFormat.TRANSLUCENT
             )
             defaultDisplay?.getMetrics(displayMetrics)
 
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && WindowConfig.flag === clickableFlag) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
                 params.alpha = MAXIMUM_OPACITY_ALLOWED_FOR_S_AND_HIGHER
             }
-            params.gravity = WindowConfig.gravity
+            params.gravity = Gravity.CENTER or Gravity.START
             addView(flutterView, params)
         }
 

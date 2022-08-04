@@ -45,6 +45,7 @@ class AppHome extends StatefulWidget {
 class _AppHomeState extends State<AppHome> {
   late VideoPlayerController _controller;
   var currentPosition = "00:00:00";
+  var active = false;
   String url = 'assets/videos/video_test03.mp4';
 
   @override
@@ -66,11 +67,10 @@ class _AppHomeState extends State<AppHome> {
       if (event != "close") {
         _controller.seekTo(Duration(milliseconds: event));
       } else {
-        print("[AppHome] - Close");
         await PipFlutter.close();
-        //p
-        await PipFlutter.pushArguments("close");
       }
+      active = await PipFlutter.isActive();
+      setState(() {});
     });
   }
 
@@ -80,6 +80,7 @@ class _AppHomeState extends State<AppHome> {
     return videoScreen(
         controller: _controller,
         curr: currentPosition,
+        isActive: active,
         close: () async {
           await PipFlutter.close();
         },
@@ -88,13 +89,8 @@ class _AppHomeState extends State<AppHome> {
           var isActive = await PipFlutter.isActive();
           if (!isActive) {
             await PipFlutter.show(
-                enableDrag: true,
                 overlayTitle: "com.example.tub_app_overlays",
                 overlayContent: 'Overlay Enabled',
-                flag: OverlayFlag.defaultFlag,
-                alignment: OverlayAlignment.centerLeft,
-                visibility: NotificationVisibility.visibilityPrivate,
-                positionGravity: PositionGravity.auto,
                 width: 300.dpToPx(density),
                 height: (300 * 9 ~/ 16).dpToPx(density));
 
@@ -110,6 +106,7 @@ class _AppHomeState extends State<AppHome> {
 Widget videoScreen({
   required VideoPlayerController controller,
   required String curr,
+  required bool isActive,
   required VoidCallback close,
   required VoidCallback showOverlays,
 }) {
@@ -131,6 +128,19 @@ Widget videoScreen({
                   child: AspectRatio(
                       aspectRatio: controller.value.aspectRatio,
                       child: VideoPlayer(controller))),
+              if (isActive)
+                Positioned(
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  child: Container(
+                    color: Colors.red,
+                    child: Center(
+                      child: Text("overlays is running"),
+                    ),
+                  ),
+                ),
               Text(
                 curr,
                 style: const TextStyle(fontSize: 30, color: Colors.white),
@@ -149,20 +159,6 @@ Widget videoScreen({
                       Icons.settings_overscan_rounded,
                       color: Colors.white,
                     ),
-                  ),
-                ),
-              ),
-              Positioned(
-                top: 0,
-                left: 0,
-                child: InkWell(
-                  onTap: () {
-                    close();
-                  },
-                  child: const Icon(
-                    Icons.close,
-                    color: Colors.white,
-                    size: 50,
                   ),
                 ),
               ),
@@ -188,10 +184,7 @@ Widget mainContainer(BuildContext context) {
                   enableDrag: true,
                   overlayTitle: "com.example.tub_app_overlays",
                   overlayContent: 'Overlay Enabled',
-                  flag: OverlayFlag.defaultFlag,
-                  alignment: OverlayAlignment.centerLeft,
                   visibility: NotificationVisibility.visibilityPrivate,
-                  positionGravity: PositionGravity.auto,
                   width: 300.dpToPx(density),
                   height: (300 * 9 ~/ 16).dpToPx(density));
             },

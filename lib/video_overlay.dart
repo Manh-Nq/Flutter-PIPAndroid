@@ -15,16 +15,16 @@ class _VideoOverlaysState extends State<VideoOverlays> {
   Color color = const Color(0xFFFFFFFF);
   late VideoPlayerController _controller;
   String pos = "";
+  bool isInit = false;
 
   @override
   void initState() {
     super.initState();
     PipFlutter.overlayListener.listen(
-      (event) {
+      (event) async {
         if (event.toString().contains("{")) {
           var result = fromJson(event);
           print("${result[0]}---${result[1]} ");
-
           _controller = VideoPlayerController.asset(result[0])
             ..addListener(() async {
               var curPos = _controller.value.position.inMilliseconds.toString();
@@ -39,11 +39,13 @@ class _VideoOverlaysState extends State<VideoOverlays> {
                 setState(() {
                   pos = result[1].toString();
                   _controller.seekTo(Duration(milliseconds: result[1]));
+                  isInit = true;
                 });
               },
             );
         } else if (event == "close") {
           _controller.dispose();
+          isInit = false;
         }
       },
     );
@@ -51,19 +53,21 @@ class _VideoOverlaysState extends State<VideoOverlays> {
 
   @override
   Widget build(BuildContext context) {
-    IconData icon =
-        _controller.value.isPlaying ? Icons.pause : Icons.play_arrow;
-    return Scaffold(
-        body: InkWell(
+    return Scaffold(body: isInit ? body(_controller) : const Center(child: CircularProgressIndicator(),));
+  }
+
+  Widget body(VideoPlayerController controller) {
+    IconData icon = controller.value.isPlaying ? Icons.pause : Icons.play_arrow;
+    return InkWell(
       onTap: () {
         setState(
           () {
             try {
               print("play------");
               if (_controller.value.isPlaying) {
-                _controller.pause();
+                controller.pause();
               } else {
-                _controller.play();
+                controller.play();
               }
             } catch (error) {
               print(error);
@@ -80,7 +84,7 @@ class _VideoOverlaysState extends State<VideoOverlays> {
             bottom: 0,
             child: AspectRatio(
               aspectRatio: _controller.value.aspectRatio,
-              child: VideoPlayer(_controller),
+              child: VideoPlayer(controller),
             ),
           ),
           Positioned(
@@ -133,7 +137,7 @@ class _VideoOverlaysState extends State<VideoOverlays> {
               )),
         ],
       ),
-    ));
+    );
   }
 
   @override

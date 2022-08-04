@@ -20,7 +20,6 @@ import io.flutter.plugin.common.MethodChannel
 
 
 const val OVER_LAY_CHANNEL = "com.example.tub_app_overlays/overlayChannel"
-const val FLAGS_CHANNEL = "com.example.tub_app_overlays/flag_channel"
 const val MESSAGE_CHANNEL = "com.example.tub_app_overlays/overlay_messenger"
 const val CACHE_TAG = "myCachedEngine"
 
@@ -77,24 +76,18 @@ class MainActivity : FlutterActivity(), MethodChannel.MethodCallHandler,
 
                     val height = call.argument("height") as Int? ?: -1
                     val width = call.argument("width") as Int? ?: -1
-                    val alignment = call.argument("alignment") as String? ?: ""
-                    val flag = call.argument("flag") as String? ?: "flagNotFocusable"
                     val overlayTitle = call.argument("overlayTitle") as String? ?: ""
                     val overlayContent = call.argument("overlayContent") as String? ?: ""
                     val notificationVisibility =
                         call.argument("notificationVisibility") as String? ?: "visibilityPrivate"
                     val enableDrag = call.argument("enableDrag") as Boolean? ?: false
-                    val positionGravity = call.argument("positionGravity") as String? ?: ""
 
                     WindowConfig.width = width
                     WindowConfig.height = height
                     WindowConfig.enableDrag = enableDrag
 
-                    WindowConfig.setGravityFromAlignment(alignment)
-                    WindowConfig.setFlag(flag)
                     WindowConfig.overlayTitle = overlayTitle
                     WindowConfig.overlayContent = overlayContent
-                    WindowConfig.positionGravity = positionGravity
                     WindowConfig.setNotificationVisibility(notificationVisibility)
 
                     val intent = Intent(context, OverlayService::class.java)
@@ -124,7 +117,7 @@ class MainActivity : FlutterActivity(), MethodChannel.MethodCallHandler,
                 }
                 return
             }
-            "requestP" -> {
+            "requestPermission" -> {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                     val intent = Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION)
                     intent.data = Uri.parse("package:$packageName")
