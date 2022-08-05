@@ -1,46 +1,53 @@
+import 'dart:ffi';
 
 import 'package:flutter/material.dart';
 
-
-Widget iconViews() {
-  return Row(
-    children: const [
-      Expanded(
-        flex: 1,
-        child: Icon(
-          Icons.link_off,
-          size: 25,
+Widget iconViews(VoidCallback callback) {
+  return Material(
+    child: Row(
+      children: [
+        Expanded(
+          flex: 1,
+          child: InkWell(
+            onTap: () {
+              callback();
+            },
+            child: Icon(
+              Icons.link_off,
+              size: 25,
+            ),
+          ),
         ),
-      ),
-      Expanded(
-        flex: 1,
-        child: Icon(
-          Icons.share,
-          size: 25,
+        Expanded(
+          flex: 1,
+          child: Icon(
+            Icons.share,
+            size: 25,
+          ),
         ),
-      ),
-      Expanded(
-        flex: 1,
-        child: Icon(
-          Icons.download,
-          size: 25,
+        Expanded(
+          flex: 1,
+          child: Icon(
+            Icons.download,
+            size: 25,
+          ),
         ),
-      ),
-      Expanded(
-        flex: 1,
-        child: Icon(
-          Icons.cut,
-          size: 25,
+        Expanded(
+          flex: 1,
+          child: Icon(
+            Icons.cut,
+            size: 25,
+          ),
         ),
-      ),
-      Expanded(
-        flex: 1,
-        child: Icon(
-          Icons.save_alt,
-          size: 25,
-        ),
-      )
-    ],
+        Expanded(
+          flex: 1,
+          child: Icon(
+            Icons.save_alt,
+            size: 25,
+          ),
+        )
+      ],
+    ),
   );
 }
 
@@ -135,7 +142,7 @@ Widget content() {
   );
 }
 
-Widget listVideos(List<Video> videos) {
+Widget listVideos(List<Video> videos, VoidCallback callback) {
   return Scrollbar(
       child: Opacity(
           opacity: 1,
@@ -143,7 +150,7 @@ Widget listVideos(List<Video> videos) {
             itemBuilder: (context, index) {
               var item = videos[index];
               if (item.type == TypeItem.header) {
-                return headerItem();
+                return headerItem(callback);
               } else {
                 return VideoCard(video: videos[index]);
               }
@@ -152,7 +159,7 @@ Widget listVideos(List<Video> videos) {
           )));
 }
 
-Widget headerItem() {
+Widget headerItem(VoidCallback callback) {
   return Container(
     width: double.infinity,
     alignment: Alignment.topLeft,
@@ -170,13 +177,12 @@ Widget headerItem() {
           ),
         ),
         Expanded(
-          child: iconViews(),
+          child: iconViews(callback),
         )
       ],
     ),
   );
 }
-
 
 class VideoCard extends StatelessWidget {
   final Video video;
@@ -282,7 +288,6 @@ class VideoCard extends StatelessWidget {
   }
 }
 
-
 class UserVideo {
   final String username;
   final String profileImageUrl;
@@ -300,9 +305,9 @@ const UserVideo currentUser = UserVideo(
   profileImageUrl: 'https://www.flaticon.com/free-icon/poster_252341',
   subscribers: '100tr',
 );
-enum TypeItem{
-  item, header
-}
+
+enum TypeItem { item, header }
+
 class Video {
   final String id;
   final UserVideo author;
@@ -328,12 +333,13 @@ class Video {
     required this.type,
   });
 }
+
 List<Video> fakeItems() {
-  List<Video> videos=[];
-  for(int i=0; i<10;i++){
-    if(i==0){
+  List<Video> videos = [];
+  for (int i = 0; i < 10; i++) {
+    if (i == 0) {
       videos.add(fakeHeader());
-    }else{
+    } else {
       videos.add(fakeVideo());
     }
   }
@@ -341,35 +347,31 @@ List<Video> fakeItems() {
   return videos;
 }
 
-Video fakeVideo(){
-  return  Video(
+Video fakeVideo() {
+  return Video(
       id: 'x606y4QWrxo',
       author: currentUser,
       title: 'this is animal in animal world',
       thumbnailUrl:
-      'https://images.pexels.com/photos/751829/pexels-photo-751829.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500',
+          'https://images.pexels.com/photos/751829/pexels-photo-751829.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500',
       duration: '8:20',
       timestamp: DateTime(2021, 3, 20),
       viewCount: '10K',
       likes: '958',
       dislikes: '4',
-      type: TypeItem.item
-  );
+      type: TypeItem.item);
 }
 
-Video fakeHeader(){
+Video fakeHeader() {
   return Video(
       id: '',
       author: currentUser,
       title: '',
-      thumbnailUrl:
-      '',
+      thumbnailUrl: '',
       duration: '',
       timestamp: DateTime(2021, 3, 20),
       viewCount: '',
       likes: '',
       dislikes: '',
-      type: TypeItem.header
-  );
+      type: TypeItem.header);
 }
-

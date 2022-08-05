@@ -43,6 +43,8 @@ class PipFlutter {
     );
   }
 
+  ///[url]url: link of video
+
   static Future<bool?> showPopup(
     String url,
     int position, {
@@ -58,10 +60,11 @@ class PipFlutter {
     var isActive = await PipFlutter.isActive();
     if (!isActive) {
       isShowSuccess = await _show(
-          overlayTitle: "Tub App",
-          overlayContent: 'Overlay Video',
-          width: width,
-          height: height);
+        overlayTitle: "Tub App",
+        overlayContent: 'Overlay Video',
+        width: width,
+        height: height,
+      );
 
       await PipFlutter.pushArguments(
         {

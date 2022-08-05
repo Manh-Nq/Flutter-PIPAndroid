@@ -15,6 +15,7 @@ object WindowConfig {
     var notificationVisibility = NotificationCompat.VISIBILITY_PRIVATE
     var enableDrag = false
     var serviceIsRunning = false;
+
     fun setNotificationVisibility(name: String) {
         if (name.equals("visibilityPublic", ignoreCase = true)) {
             notificationVisibility = NotificationCompat.VISIBILITY_PUBLIC

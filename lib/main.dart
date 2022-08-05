@@ -68,18 +68,21 @@ class _AppHomeState extends State<AppHome> {
       });
 
     PipFlutter.overlayListener.listen((event) async {
-      if (event != "close") {
+      if (event != "close" && event != "") {
         _controller.seekTo(Duration(milliseconds: event));
       } else {
         await PipFlutter.close();
       }
       active = await PipFlutter.isActive();
+
       setState(() {});
     });
   }
 
   @override
   Widget build(BuildContext context) {
+    print("Rebuild");
+
     var density = MediaQuery.of(context).devicePixelRatio;
     return videoScreen(
         controller: _controller,
@@ -87,6 +90,9 @@ class _AppHomeState extends State<AppHome> {
         isActive: active,
         close: () async {
           await PipFlutter.close();
+          setState(() {
+            active = false;
+          });
         },
         showOverlays: () async {
           _controller.pause();
@@ -135,7 +141,7 @@ Widget videoScreen({
                   bottom: 0,
                   child: Container(
                     color: Colors.red,
-                    child: Center(
+                    child: const Center(
                       child: Text("overlays is running"),
                     ),
                   ),
@@ -163,7 +169,7 @@ Widget videoScreen({
               ),
             ],
           ),
-          Expanded(flex: 1, child: listVideos(fakeItems()))
+          Expanded(flex: 1, child: listVideos(fakeItems(), close))
         ],
       ),
     ),

@@ -213,7 +213,6 @@ class OverlayService : Service(), View.OnTouchListener {
             } else {
                 mScaleFactor
             }
-
             resizeOverlay(mScaleFactor)
             return true
         }
@@ -234,6 +233,10 @@ class OverlayService : Service(), View.OnTouchListener {
                     lastY = event.rawY;
                 }
                 MotionEvent.ACTION_MOVE -> {
+                    Log.d(
+                        "ManhNQ",
+                        "onTouch params:  ${params.x + params.width / 2} widthParams ${params.width}-- width: ${width / 2} rawX:  ${event.rawX}"
+                    )
                     if (event.pointerCount == 1) {
                         val dx = event.rawX - lastX
                         val dy = event.rawY - lastY
@@ -253,12 +256,12 @@ class OverlayService : Service(), View.OnTouchListener {
 
                 }
                 else -> {
-                    return false;
+                    return false
                 }
             }
-            return false;
+            return false
         }
-        return false;
+        return false
     }
 
     private fun calculatorX(xx: Int, widthPx: Int, widthParams: Int): Int {

@@ -1,5 +1,6 @@
 package com.example.tub_app_overlays
 
+import android.animation.ValueAnimator
 import android.content.Intent
 import android.net.Uri
 import android.os.Build
@@ -88,6 +89,7 @@ class MainActivity : FlutterActivity(), MethodChannel.MethodCallHandler,
 
                     WindowConfig.overlayTitle = overlayTitle
                     WindowConfig.overlayContent = overlayContent
+
                     WindowConfig.setNotificationVisibility(notificationVisibility)
 
                     val intent = Intent(context, OverlayService::class.java)
@@ -161,7 +163,6 @@ class MainActivity : FlutterActivity(), MethodChannel.MethodCallHandler,
             )
             overlayMessageChannel.send(message, reply);
         }
-
     }
 
 }

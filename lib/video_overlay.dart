@@ -53,90 +53,77 @@ class _VideoOverlaysState extends State<VideoOverlays> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(body: isInit ? body(_controller) : const Center(child: CircularProgressIndicator(),));
+    return Scaffold(
+        body: isInit
+            ? body(_controller)
+            : const Center(
+                child: CircularProgressIndicator(),
+              ));
   }
 
   Widget body(VideoPlayerController controller) {
     IconData icon = controller.value.isPlaying ? Icons.pause : Icons.play_arrow;
-    return InkWell(
-      onTap: () {
-        setState(
-          () {
-            try {
-              print("play------");
-              if (_controller.value.isPlaying) {
-                controller.pause();
-              } else {
-                controller.play();
-              }
-            } catch (error) {
-              print(error);
-            }
-          },
-        );
-      },
-      child: Stack(
-        children: [
-          Positioned(
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            child: AspectRatio(
-              aspectRatio: _controller.value.aspectRatio,
-              child: VideoPlayer(controller),
-            ),
+    return Stack(
+      children: [
+        Positioned(
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          child: AspectRatio(
+            aspectRatio: _controller.value.aspectRatio,
+            child: VideoPlayer(controller),
           ),
-          Positioned(
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            child: Row(
-              mainAxisSize: MainAxisSize.max,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                InkWell(
-                  onTap: () async {
-                    print("ontab play/pause");
-                    if (_controller.value.isPlaying) {
-                      _controller.pause();
-                    } else {
-                      _controller.play();
-                    }
-                  },
-                  child: Icon(
-                    color: Colors.red,
-                    icon,
-                    size: 50,
-                  ),
+        ),
+        Positioned(
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          child: Row(
+            mainAxisSize: MainAxisSize.max,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              InkWell(
+                onTap: () async {
+                  print("ontab play/pause");
+                  if (_controller.value.isPlaying) {
+                    _controller.pause();
+                  } else {
+                    _controller.play();
+                  }
+                },
+                child: Icon(
+                  color: Colors.red,
+                  icon,
+                  size: 50,
                 ),
-              ],
-            ),
-          ),
-          Positioned(
-            top: 0,
-            right: 0,
-            child: InkWell(
-              onTap: () async {
-                await PipFlutter.pushArguments("close");
-              },
-              child: const Icon(
-                Icons.close,
-                color: Colors.red,
-                size: 50,
               ),
+            ],
+          ),
+        ),
+        Positioned(
+          top: 0,
+          right: 0,
+          child: InkWell(
+            onTap: () async {
+              await PipFlutter.close();
+            },
+            child: const Icon(
+              Icons.close,
+              color: Colors.red,
+              size: 50,
             ),
           ),
-          Positioned(
-              top: 16,
-              left: 16,
-              child: Text(
-                pos,
-                style: TextStyle(fontSize: 20, color: Colors.white),
-              )),
-        ],
-      ),
+        ),
+        Positioned(
+            top: 16,
+            left: 16,
+            child: Text(
+              pos,
+              style: TextStyle(fontSize: 20, color: Colors.white),
+            )),
+      ],
     );
   }
 
