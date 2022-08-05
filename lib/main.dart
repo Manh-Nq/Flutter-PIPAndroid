@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:tub_app_overlays/lifecycle_event_handler.dart';
 import 'package:tub_app_overlays/pip_flutter.dart';
 import 'package:tub_app_overlays/video_overlay.dart';
 import 'package:video_player/video_player.dart';
@@ -45,6 +46,7 @@ class AppHome extends StatefulWidget {
 class _AppHomeState extends State<AppHome> {
   late VideoPlayerController _controller;
   var currentPosition = "0";
+  LifecycleEventHandler? listener;
   var active = false;
   String url = 'assets/videos/video_test03.mp4';
 
@@ -81,11 +83,19 @@ class _AppHomeState extends State<AppHome> {
 
       setState(() {});
     });
+    listener =  LifecycleEventHandler(
+      callback: (state) async {
+        print("-------$state");
+      },
+      onDestroy: (){
+        print("-------onDestroy");
+      }
+    );
+    WidgetsBinding.instance.addObserver(listener as WidgetsBindingObserver);
   }
 
   @override
   Widget build(BuildContext context) {
-    print("Rebuild");
 
     var density = MediaQuery.of(context).devicePixelRatio;
     return videoScreen(
@@ -116,7 +126,15 @@ class _AppHomeState extends State<AppHome> {
   void dispose() {
     // TODO: implement dispose
     super.dispose();
+    print("dispose app -----------------------------------------");
+    WidgetsBinding.instance.removeObserver(listener as WidgetsBindingObserver);
     PipFlutter.disposeOverlayListener();
+  }
+
+  @override
+  void deactivate() {
+    print("deactivate app -----------------------------------------");
+    super.deactivate();
   }
 }
 

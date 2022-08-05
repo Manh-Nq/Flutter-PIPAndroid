@@ -1,6 +1,5 @@
 package com.example.tub_app_overlays
 
-import android.view.Gravity
 import android.view.WindowManager
 import androidx.core.app.NotificationCompat
 import io.flutter.plugin.common.BasicMessageChannel

@@ -204,7 +204,7 @@ class OverlayService : Service(), View.OnTouchListener {
 
     private val scaleListener = object : ScaleGestureDetector.SimpleOnScaleGestureListener() {
         override fun onScale(detector: ScaleGestureDetector): Boolean {
-            Log.d("ManhNQ", "onScale: $mScaleFactor")
+            Log.d("ManhNQ", "onScale: $mScaleFactor  -- ${detector.scaleFactor}")
             mScaleFactor *= detector.scaleFactor
             mScaleFactor = mScaleFactor.calculatorScale()
 

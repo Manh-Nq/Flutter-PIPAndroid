@@ -60,6 +60,9 @@ class MainActivity : FlutterActivity(), MethodChannel.MethodCallHandler,
     }
 
     override fun onMethodCall(call: MethodCall, result: MethodChannel.Result) {
+
+        Log.d("ManhNQ", "onMethodCall: ")
+
         this.result = result
         when (call.method) {
             "show" -> {
@@ -172,6 +175,22 @@ class MainActivity : FlutterActivity(), MethodChannel.MethodCallHandler,
             )
             overlayMessageChannel.send(message, reply);
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        Log.d("ManhNQ", "[NATIVE] onResume: ")
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        Log.d("ManhNQ", "[NATIVE] onDestroy: ")
+//        WindowConfig.messenger.send("app killed")
+    }
+
+    override fun onDetachedFromWindow() {
+        super.onDetachedFromWindow()
+        Log.d("ManhNQ", "[NATIVE] onDetachedFromWindow: ")
     }
 
 }

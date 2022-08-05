@@ -87,7 +87,7 @@ class PipFlutter {
   ///this had bug : if using only [ _channel.invokeMethod('close')] then show
   ///MissingPluginException('No implementation found for method $method on channel $name');
   static Future<void> close() async {
-    await PipFlutter.pushArguments("close");
+    // await PipFlutter.pushArguments("close");
     await _channel.invokeMethod('close');
   }
 

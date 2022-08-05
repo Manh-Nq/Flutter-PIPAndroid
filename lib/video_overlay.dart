@@ -26,21 +26,26 @@ class _VideoOverlaysState extends State<VideoOverlays> {
           var result = fromJson(event);
           print("${result[0]}---${result[1]} ");
           _controller = VideoPlayerController.asset(result[0])
-            ..addListener(() async {
-              var curPos = _controller.value.position.inMilliseconds.toString();
-              setState(() {
-                pos = curPos;
-              });
-              await PipFlutter.pushArguments(
-                  _controller.value.position.inMilliseconds);
-            })
+            ..addListener(
+              () async {
+                var curPos =
+                    _controller.value.position.inMilliseconds.toString();
+                setState(() {
+                  pos = curPos;
+                });
+                await PipFlutter.pushArguments(
+                    _controller.value.position.inMilliseconds);
+              },
+            )
             ..initialize().then(
               (value) {
-                setState(() {
-                  pos = result[1].toString();
-                  _controller.seekTo(Duration(milliseconds: result[1]));
-                  isInit = true;
-                });
+                setState(
+                  () {
+                    pos = result[1].toString();
+                    _controller.seekTo(Duration(milliseconds: result[1]));
+                    isInit = true;
+                  },
+                );
               },
             );
         } else if (event == "close") {
