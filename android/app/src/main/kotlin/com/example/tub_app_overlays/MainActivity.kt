@@ -1,6 +1,5 @@
 package com.example.tub_app_overlays
 
-import android.animation.ValueAnimator
 import android.content.Intent
 import android.net.Uri
 import android.os.Build
@@ -13,7 +12,6 @@ import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.embedding.engine.FlutterEngineCache
 import io.flutter.embedding.engine.FlutterEngineGroup
 import io.flutter.embedding.engine.dart.DartExecutor.DartEntrypoint
-import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.plugin.common.BasicMessageChannel
 import io.flutter.plugin.common.JSONMessageCodec
 import io.flutter.plugin.common.MethodCall
@@ -23,13 +21,14 @@ import io.flutter.plugin.common.MethodChannel
 const val OVER_LAY_CHANNEL = "com.example.tub_app_overlays/overlayChannel"
 const val MESSAGE_CHANNEL = "com.example.tub_app_overlays/overlay_messenger"
 const val CACHE_TAG = "myCachedEngine"
+const val REQUEST_CODE_FOR_OVERLAY_PERMISSION = 1009
 
 class MainActivity : FlutterActivity(), MethodChannel.MethodCallHandler,
     BasicMessageChannel.MessageHandler<Any?> {
     lateinit var overlayChannel: MethodChannel
     lateinit var messageChannel: BasicMessageChannel<Any?>
     lateinit var result: MethodChannel.Result
-    val REQUEST_CODE_FOR_OVERLAY_PERMISSION = 1009
+
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
@@ -83,10 +82,10 @@ class MainActivity : FlutterActivity(), MethodChannel.MethodCallHandler,
                         call.argument("notificationVisibility") as String? ?: "visibilityPrivate"
                     val enableDrag = call.argument("enableDrag") as Boolean? ?: false
 
+                    //config arguments
                     WindowConfig.width = width
                     WindowConfig.height = height
                     WindowConfig.enableDrag = enableDrag
-
                     WindowConfig.overlayTitle = overlayTitle
                     WindowConfig.overlayContent = overlayContent
 
@@ -131,6 +130,10 @@ class MainActivity : FlutterActivity(), MethodChannel.MethodCallHandler,
             "isActive" -> {
                 result.success(WindowConfig.serviceIsRunning)
             }
+
+            "isPermissionGranted" -> {
+                result.success(checkOverlayPermission())
+            }
         }
     }
 
@@ -139,6 +142,12 @@ class MainActivity : FlutterActivity(), MethodChannel.MethodCallHandler,
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
             Settings.canDrawOverlays(context)
         else true
+    }
+
+    private fun checkOverlayPermission(): Boolean {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            Settings.canDrawOverlays(context)
+        } else true
     }
 
 

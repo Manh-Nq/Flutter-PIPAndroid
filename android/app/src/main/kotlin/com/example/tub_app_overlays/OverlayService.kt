@@ -30,6 +30,7 @@ const val CHANNEL_ID = "Overlay Channel"
 const val NOTIFICATION_ID = 4579
 const val MIN_SIZE = 200f
 const val RATIO_VIDEO = 16f / 9f
+const val MAXIMUM_OPACITY_ALLOWED_FOR_S_AND_HIGHER = 0.8f
 
 class OverlayService : Service(), View.OnTouchListener {
 
@@ -44,7 +45,7 @@ class OverlayService : Service(), View.OnTouchListener {
     private var lastX = 0f
     private var lastY = 0f
     private var dragging = false
-    private val MAXIMUM_OPACITY_ALLOWED_FOR_S_AND_HIGHER = 0.8f
+
     private val szWindow: Point = Point()
     var scaleGestureDetector: ScaleGestureDetector? = null
     private var mScaleFactor = 1f
@@ -52,6 +53,8 @@ class OverlayService : Service(), View.OnTouchListener {
     private val displayMetrics = DisplayMetrics()
     private val width: Int get() = displayMetrics.widthPixels
     private val height: Int get() = displayMetrics.heightPixels
+
+    private val params: WindowManager.LayoutParams get() = flutterView?.layoutParams as WindowManager.LayoutParams
 
     override fun onBind(intent: Intent?): IBinder? {
         return null
@@ -85,7 +88,7 @@ class OverlayService : Service(), View.OnTouchListener {
                 )
             )
             flutterView?.let { view ->
-                view.attachToFlutterEngine(FlutterEngineCache.getInstance()[CACHE_TAG]!!)
+                view.attachToFlutterEngine(engine)
                 view.fitsSystemWindows = true
                 view.isFocusable = true
                 view.isFocusableInTouchMode = true
@@ -186,7 +189,6 @@ class OverlayService : Service(), View.OnTouchListener {
 
     private fun resizeOverlay(scaleRatio: Float) {
         if (windowManager != null) {
-            val params = flutterView?.layoutParams as WindowManager.LayoutParams
             val w = (params.width * scaleRatio).toInt()
             val h = (params.height * scaleRatio).toInt()
 
@@ -204,15 +206,8 @@ class OverlayService : Service(), View.OnTouchListener {
         override fun onScale(detector: ScaleGestureDetector): Boolean {
             Log.d("ManhNQ", "onScale: $mScaleFactor")
             mScaleFactor *= detector.scaleFactor
+            mScaleFactor = mScaleFactor.calculatorScale()
 
-            mScaleFactor = 0.5f.coerceAtLeast(mScaleFactor.coerceAtMost(2f))
-            val params = flutterView?.layoutParams as WindowManager.LayoutParams
-
-            mScaleFactor = if (mScaleFactor > (width.toFloat() / params.width.toFloat())) {
-                width.toFloat() / params.width.toFloat()
-            } else {
-                mScaleFactor
-            }
             resizeOverlay(mScaleFactor)
             return true
         }
@@ -223,20 +218,14 @@ class OverlayService : Service(), View.OnTouchListener {
         scaleGestureDetector?.onTouchEvent(event)
 
         if (windowManager != null && WindowConfig.enableDrag) {
-            val params = flutterView?.layoutParams as WindowManager.LayoutParams
 
             when (event?.action) {
                 MotionEvent.ACTION_DOWN -> {
-
                     dragging = false;
                     lastX = event.rawX;
                     lastY = event.rawY;
                 }
                 MotionEvent.ACTION_MOVE -> {
-                    Log.d(
-                        "ManhNQ",
-                        "onTouch params:  ${params.x + params.width / 2} widthParams ${params.width}-- width: ${width / 2} rawX:  ${event.rawX}"
-                    )
                     if (event.pointerCount == 1) {
                         val dx = event.rawX - lastX
                         val dy = event.rawY - lastY
@@ -247,8 +236,8 @@ class OverlayService : Service(), View.OnTouchListener {
                         lastY = event.rawY
                         val xx = params.x + dx.toInt()
                         val yy = params.y + dy.toInt()
-                        params.x = calculatorX(xx, width, params.width)
-                        params.y = calculatorY(yy, height, params.height)
+                        params.x = xx.calculatorX(width, params.width)
+                        params.y = yy.calculatorY(height, params.height)
 
                         windowManager?.updateViewLayout(flutterView, params)
                         dragging = true
@@ -264,25 +253,33 @@ class OverlayService : Service(), View.OnTouchListener {
         return false
     }
 
-    private fun calculatorX(xx: Int, widthPx: Int, widthParams: Int): Int {
+    private fun Int.calculatorX(widthPx: Int, widthParams: Int): Int {
         val offset = widthPx - widthParams
-        return if (xx < 0) {
+        return if (this < 0) {
             0
-        } else if (xx > offset) {
+        } else if (this > offset) {
             offset
         } else {
-            xx
+            this
         }
     }
 
-    private fun calculatorY(yy: Int, height: Int, heightParams: Int): Int {
-        val offset = (height - heightParams) / 2 - heightParams / 10
-        return if (yy < -offset) {
+    private fun Int.calculatorY(height: Int, heightParams: Int): Int {
+        val offset = (height - heightParams) / 2 - 35
+        return if (this < -offset) {
             -offset
-        } else if (yy > offset) {
+        } else if (this > offset) {
             offset
         } else {
-            yy
+            this
+        }
+    }
+
+    private fun Float.calculatorScale(): Float {
+        return if (this > (width.toFloat() / params.width.toFloat())) {
+            width.toFloat() / params.width.toFloat()
+        } else {
+            this
         }
     }
 

@@ -44,7 +44,7 @@ class AppHome extends StatefulWidget {
 
 class _AppHomeState extends State<AppHome> {
   late VideoPlayerController _controller;
-  var currentPosition = "00:00:00";
+  var currentPosition = "0";
   var active = false;
   String url = 'assets/videos/video_test03.mp4';
 
@@ -63,9 +63,13 @@ class _AppHomeState extends State<AppHome> {
           );
         },
       )
-      ..initialize().then((value) {
-        setState(() {});
-      });
+      ..initialize().then(
+        (value) {
+          setState(
+            () {},
+          );
+        },
+      );
 
     PipFlutter.overlayListener.listen((event) async {
       if (event != "close" && event != "") {
@@ -85,26 +89,34 @@ class _AppHomeState extends State<AppHome> {
 
     var density = MediaQuery.of(context).devicePixelRatio;
     return videoScreen(
-        controller: _controller,
-        curr: currentPosition,
-        isActive: active,
-        close: () async {
-          await PipFlutter.close();
-          setState(() {
-            active = false;
-          });
-        },
-        showOverlays: () async {
-          _controller.pause();
-          await PipFlutter.showPopup(
-            url,
-            _controller.value.position.inMilliseconds,
-            overlayTitle: "Tub App",
-            overlayContent: 'Overlay Video',
-            width: 300.dpToPx(density),
-            height: (300 * 9 ~/ 16).dpToPx(density),
-          );
+      controller: _controller,
+      curr: currentPosition,
+      isActive: active,
+      close: () async {
+        await PipFlutter.close();
+        setState(() {
+          active = false;
         });
+      },
+      showOverlays: () async {
+        _controller.pause();
+        await PipFlutter.showPopup(
+          url,
+          _controller.value.position.inMilliseconds,
+          overlayTitle: "Tub App",
+          overlayContent: 'Overlay Video',
+          width: 300.dpToPx(density),
+          height: (300 * 9 ~/ 16).dpToPx(density),
+        );
+      },
+    );
+  }
+
+  @override
+  void dispose() {
+    // TODO: implement dispose
+    super.dispose();
+    PipFlutter.disposeOverlayListener();
   }
 }
 

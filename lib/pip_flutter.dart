@@ -43,7 +43,14 @@ class PipFlutter {
     );
   }
 
-  ///[url]url: link of video
+  ///[url] link of video
+  ///[position] current time of video send to popup
+  /// [height] height of popup, must be convert to Pixel
+  /// [width] width of popup, must be convert to Pixel
+  /// [visibility] the detail displayed in notifications on the lock screen and default is [NotificationVisibility.visibilityPrivate]
+  /// [overlayTitle] title of notification when show popup
+  /// [overlayContent] content of notification when show popup
+  /// [enableDrag] if you want to drag popup be set enableDrag = true else false
 
   static Future<bool?> showPopup(
     String url,
@@ -76,21 +83,38 @@ class PipFlutter {
     return isShowSuccess;
   }
 
+  ///close popup
+  ///this had bug : if using only [ _channel.invokeMethod('close')] then show
+  ///MissingPluginException('No implementation found for method $method on channel $name');
   static Future<void> close() async {
     await PipFlutter.pushArguments("close");
     await _channel.invokeMethod('close');
   }
 
+  ///share Argument between Dart UI and Overlays
+  ///when send from Flutter UI then Android Native has receive data at Method onMessage
+  ///and send to Overlays this data
+  ///when send from Overlays then Service has receive data at setMessageHandler
+  ///and send to Flutter UI this data
+  ///You can listen only one place
   static Future<void> pushArguments(dynamic arguments) async {
     return await _overlayMessageChannel.send(arguments);
   }
 
+  /// check Service active or non-active
+  /// return true if active and false if non-active
   static Future<bool> isActive() async {
     return await _channel.invokeMethod("isActive");
   }
 
+  ///request Permission android.permission.SYSTEM_ALERT_WINDOW
   static Future<bool> requestP() async {
     return await _channel.invokeMethod('requestPermission');
+  }
+
+  ///check permission android.permission.SYSTEM_ALERT_WINDOW is accept or decline
+  static Future<bool>  isPermissionGranted() async {
+    return await _channel.invokeMethod('isPermissionGranted');
   }
 
   static Stream<dynamic> get overlayListener {
