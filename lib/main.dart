@@ -74,29 +74,25 @@ class _AppHomeState extends State<AppHome> {
       );
 
     PipFlutter.overlayListener.listen((event) async {
-      if (event != "close" && event != "") {
+      if (event != "close" && event != ""  && event != "dispose") {
         _controller.seekTo(Duration(milliseconds: event));
-      } else {
+      } else if(event == "close" ){
         await PipFlutter.close();
       }
       active = await PipFlutter.isActive();
 
       setState(() {});
     });
-    listener =  LifecycleEventHandler(
-      callback: (state) async {
-        print("-------$state");
-      },
-      onDestroy: (){
-        print("-------onDestroy");
-      }
-    );
+    listener = LifecycleEventHandler(callback: (state) async {
+      print("-------$state");
+    }, onDestroy: () {
+      print("-------onDestroy");
+    });
     WidgetsBinding.instance.addObserver(listener as WidgetsBindingObserver);
   }
 
   @override
   Widget build(BuildContext context) {
-
     var density = MediaQuery.of(context).devicePixelRatio;
     return videoScreen(
       controller: _controller,

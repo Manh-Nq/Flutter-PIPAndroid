@@ -30,7 +30,7 @@ class PipFlutter {
     String? overlayContent,
     bool enableDrag = true,
   }) async {
-    await _channel.invokeMethod(
+    return await _channel.invokeMethod(
       'show',
       {
         "height": height,
@@ -87,8 +87,9 @@ class PipFlutter {
   ///this had bug : if using only [ _channel.invokeMethod('close')] then show
   ///MissingPluginException('No implementation found for method $method on channel $name');
   static Future<void> close() async {
-    // await PipFlutter.pushArguments("close");
+    await PipFlutter.pushArguments("close");
     await _channel.invokeMethod('close');
+    await PipFlutter.pushArguments("dispose");
   }
 
   ///share Argument between Dart UI and Overlays
@@ -113,12 +114,13 @@ class PipFlutter {
   }
 
   ///check permission android.permission.SYSTEM_ALERT_WINDOW is accept or decline
-  static Future<bool>  isPermissionGranted() async {
+  static Future<bool> isPermissionGranted() async {
     return await _channel.invokeMethod('isPermissionGranted');
   }
 
   static Stream<dynamic> get overlayListener {
     _overlayMessageChannel.setMessageHandler((message) async {
+      print(message);
       _controller.add(message);
     });
 

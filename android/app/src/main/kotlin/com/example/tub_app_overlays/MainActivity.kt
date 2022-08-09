@@ -12,10 +12,12 @@ import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.embedding.engine.FlutterEngineCache
 import io.flutter.embedding.engine.FlutterEngineGroup
 import io.flutter.embedding.engine.dart.DartExecutor.DartEntrypoint
+import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.plugin.common.BasicMessageChannel
 import io.flutter.plugin.common.JSONMessageCodec
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
+import io.flutter.plugins.GeneratedPluginRegistrant
 
 
 const val OVER_LAY_CHANNEL = "com.example.tub_app_overlays/overlayChannel"
@@ -29,10 +31,8 @@ class MainActivity : FlutterActivity(), MethodChannel.MethodCallHandler,
     lateinit var messageChannel: BasicMessageChannel<Any?>
     lateinit var result: MethodChannel.Result
 
-
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
-
         overlayChannel = MethodChannel(flutterEngine.dartExecutor.binaryMessenger, OVER_LAY_CHANNEL)
         messageChannel = BasicMessageChannel(
             flutterEngine.dartExecutor.binaryMessenger,
@@ -57,6 +57,7 @@ class MainActivity : FlutterActivity(), MethodChannel.MethodCallHandler,
         )
         val engine = enn.createAndRunEngine(context, dEntry)
         FlutterEngineCache.getInstance().put(CACHE_TAG, engine)
+        GeneratedPluginRegistrant.registerWith(engine)
     }
 
     override fun onMethodCall(call: MethodCall, result: MethodChannel.Result) {

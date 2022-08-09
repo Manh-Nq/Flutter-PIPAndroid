@@ -16,6 +16,7 @@ import android.os.IBinder
 import android.util.DisplayMetrics
 import android.util.Log
 import android.view.*
+import android.widget.ImageView
 import androidx.core.app.NotificationCompat
 import io.flutter.embedding.android.FlutterTextureView
 import io.flutter.embedding.android.FlutterView
@@ -53,6 +54,7 @@ class OverlayService : Service(), View.OnTouchListener {
     private val displayMetrics = DisplayMetrics()
     private val width: Int get() = displayMetrics.widthPixels
     private val height: Int get() = displayMetrics.heightPixels
+
 
     private val params: WindowManager.LayoutParams get() = flutterView?.layoutParams as WindowManager.LayoutParams
 
@@ -156,6 +158,7 @@ class OverlayService : Service(), View.OnTouchListener {
         startForeground(NOTIFICATION_ID, notification)
     }
 
+
     private fun createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val serviceChannel = NotificationChannel(
@@ -163,10 +166,9 @@ class OverlayService : Service(), View.OnTouchListener {
                 "Foreground Service Channel",
                 NotificationManager.IMPORTANCE_DEFAULT
             )
-            val manager = getSystemService(
-                NotificationManager::class.java
-            )!!
-            manager.createNotificationChannel(serviceChannel)
+            val manager = getSystemService(NotificationManager::class.java)
+
+            manager?.createNotificationChannel(serviceChannel)
         }
     }
 

@@ -15,7 +15,7 @@ class _VideoOverlaysState extends State<VideoOverlays> {
   Color color = const Color(0xFFFFFFFF);
   late VideoPlayerController _controller;
   String pos = "";
-  bool isInit = false;
+  bool isInited = false;
 
   @override
   void initState() {
@@ -24,7 +24,7 @@ class _VideoOverlaysState extends State<VideoOverlays> {
       (event) async {
         if (event.toString().contains("{")) {
           var result = fromJson(event);
-          print("${result[0]}---${result[1]} ");
+          // print("URL: ${result[0]}---POSITION: ${result[1]} ");
           _controller = VideoPlayerController.asset(result[0])
             ..addListener(
               () async {
@@ -43,14 +43,14 @@ class _VideoOverlaysState extends State<VideoOverlays> {
                   () {
                     pos = result[1].toString();
                     _controller.seekTo(Duration(milliseconds: result[1]));
-                    isInit = true;
+                    isInited = true;
                   },
                 );
               },
             );
-        } else if (event == "close") {
+        } else if (event == "dispose") {
           _controller.dispose();
-          isInit = false;
+          isInited = false;
         }
       },
     );
@@ -59,7 +59,7 @@ class _VideoOverlaysState extends State<VideoOverlays> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        body: isInit
+        body: isInited
             ? body(_controller)
             : const Center(
                 child: CircularProgressIndicator(),
