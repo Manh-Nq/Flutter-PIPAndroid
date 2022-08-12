@@ -15,7 +15,7 @@ class _VideoOverlaysState extends State<VideoOverlays> {
   Color color = const Color(0xFFFFFFFF);
   late VideoPlayerController _controller;
   String pos = "";
-  bool isInited = false;
+  bool isInit = false;
 
   @override
   void initState() {
@@ -24,7 +24,6 @@ class _VideoOverlaysState extends State<VideoOverlays> {
       (event) async {
         if (event.toString().contains("{")) {
           var result = fromJson(event);
-          // print("URL: ${result[0]}---POSITION: ${result[1]} ");
           _controller = VideoPlayerController.asset(result[0])
             ..addListener(
               () async {
@@ -43,14 +42,14 @@ class _VideoOverlaysState extends State<VideoOverlays> {
                   () {
                     pos = result[1].toString();
                     _controller.seekTo(Duration(milliseconds: result[1]));
-                    isInited = true;
+                    isInit = true;
                   },
                 );
               },
             );
         } else if (event == "dispose") {
           _controller.dispose();
-          isInited = false;
+          isInit = false;
         }
       },
     );
@@ -59,7 +58,7 @@ class _VideoOverlaysState extends State<VideoOverlays> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        body: isInited
+        body: isInit
             ? body(_controller)
             : const Center(
                 child: CircularProgressIndicator(),
@@ -112,6 +111,8 @@ class _VideoOverlaysState extends State<VideoOverlays> {
           right: 0,
           child: InkWell(
             onTap: () async {
+              _controller.dispose();
+              isInit = false;
               await PipFlutter.close();
             },
             child: const Icon(
@@ -133,15 +134,10 @@ class _VideoOverlaysState extends State<VideoOverlays> {
   }
 
   @override
-  void deactivate() {
-    print("deactivate");
-    super.deactivate();
-  }
-
-  @override
   void dispose() {
     print("dispose");
     _controller.dispose();
+    isInit = false;
     super.dispose();
   }
 }

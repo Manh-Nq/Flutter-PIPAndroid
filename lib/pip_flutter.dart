@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:developer';
 
 import 'package:flutter/services.dart';
 
@@ -24,21 +23,16 @@ class PipFlutter {
   static Future<bool?> _show({
     int height = matchParent,
     int width = matchParent,
-    NotificationVisibility visibility =
-        NotificationVisibility.visibilityPrivate,
-    String overlayTitle = "overlay activated",
-    String? overlayContent,
-    bool enableDrag = true,
+    int x = 0,
+    int y = 0,
   }) async {
     return await _channel.invokeMethod(
       'show',
       {
         "height": height,
         "width": width,
-        "overlayTitle": overlayTitle,
-        "overlayContent": overlayContent,
-        "enableDrag": enableDrag,
-        "notificationVisibility": visibility.name,
+        "x": x,
+        "y": y,
       },
     );
   }
@@ -47,31 +41,19 @@ class PipFlutter {
   ///[position] current time of video send to popup
   /// [height] height of popup, must be convert to Pixel
   /// [width] width of popup, must be convert to Pixel
-  /// [visibility] the detail displayed in notifications on the lock screen and default is [NotificationVisibility.visibilityPrivate]
-  /// [overlayTitle] title of notification when show popup
-  /// [overlayContent] content of notification when show popup
-  /// [enableDrag] if you want to drag popup be set enableDrag = true else false
 
   static Future<bool?> showPopup(
     String url,
     int position, {
     int height = matchParent,
     int width = matchParent,
-    NotificationVisibility visibility =
-        NotificationVisibility.visibilityPrivate,
-    String overlayTitle = "overlay activated",
-    String? overlayContent,
-    bool enableDrag = true,
+    int x = 0,
+    int y = 0,
   }) async {
     bool? isShowSuccess;
     var isActive = await PipFlutter.isActive();
     if (!isActive) {
-      isShowSuccess = await _show(
-        overlayTitle: "Tub App",
-        overlayContent: 'Overlay Video',
-        width: width,
-        height: height,
-      );
+      isShowSuccess = await _show(width: width, height: height, x: x, y: y);
 
       await PipFlutter.pushArguments(
         {
@@ -88,7 +70,9 @@ class PipFlutter {
   ///MissingPluginException('No implementation found for method $method on channel $name');
   static Future<void> close() async {
     await PipFlutter.pushArguments("close");
-    await _channel.invokeMethod('close');
+  }
+
+  static Future<void> dispose() async {
     await PipFlutter.pushArguments("dispose");
   }
 

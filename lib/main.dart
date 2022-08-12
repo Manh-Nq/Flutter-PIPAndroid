@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:tub_app_overlays/lifecycle_event_handler.dart';
 import 'package:tub_app_overlays/pip_flutter.dart';
 import 'package:tub_app_overlays/video_overlay.dart';
 import 'package:video_player/video_player.dart';
@@ -46,7 +45,6 @@ class AppHome extends StatefulWidget {
 class _AppHomeState extends State<AppHome> {
   late VideoPlayerController _controller;
   var currentPosition = "0";
-  LifecycleEventHandler? listener;
   var active = false;
   String url = 'assets/videos/video_test03.mp4';
 
@@ -74,21 +72,13 @@ class _AppHomeState extends State<AppHome> {
       );
 
     PipFlutter.overlayListener.listen((event) async {
-      if (event != "close" && event != ""  && event != "dispose") {
+      if (event != "close" && event != "" && event != "dispose") {
         _controller.seekTo(Duration(milliseconds: event));
-      } else if(event == "close" ){
-        await PipFlutter.close();
       }
       active = await PipFlutter.isActive();
 
       setState(() {});
     });
-    listener = LifecycleEventHandler(callback: (state) async {
-      print("-------$state");
-    }, onDestroy: () {
-      print("-------onDestroy");
-    });
-    WidgetsBinding.instance.addObserver(listener as WidgetsBindingObserver);
   }
 
   @override
@@ -99,6 +89,7 @@ class _AppHomeState extends State<AppHome> {
       curr: currentPosition,
       isActive: active,
       close: () async {
+        await PipFlutter.dispose();
         await PipFlutter.close();
         setState(() {
           active = false;
@@ -109,8 +100,6 @@ class _AppHomeState extends State<AppHome> {
         await PipFlutter.showPopup(
           url,
           _controller.value.position.inMilliseconds,
-          overlayTitle: "Tub App",
-          overlayContent: 'Overlay Video',
           width: 300.dpToPx(density),
           height: (300 * 9 ~/ 16).dpToPx(density),
         );
@@ -122,14 +111,11 @@ class _AppHomeState extends State<AppHome> {
   void dispose() {
     // TODO: implement dispose
     super.dispose();
-    print("dispose app -----------------------------------------");
-    WidgetsBinding.instance.removeObserver(listener as WidgetsBindingObserver);
     PipFlutter.disposeOverlayListener();
   }
 
   @override
   void deactivate() {
-    print("deactivate app -----------------------------------------");
     super.deactivate();
   }
 }

@@ -80,20 +80,14 @@ class MainActivity : FlutterActivity(), MethodChannel.MethodCallHandler,
 
                     val height = call.argument("height") as Int? ?: -1
                     val width = call.argument("width") as Int? ?: -1
-                    val overlayTitle = call.argument("overlayTitle") as String? ?: ""
-                    val overlayContent = call.argument("overlayContent") as String? ?: ""
-                    val notificationVisibility =
-                        call.argument("notificationVisibility") as String? ?: "visibilityPrivate"
-                    val enableDrag = call.argument("enableDrag") as Boolean? ?: false
+                    val x = call.argument("x") as Int? ?: 0
+                    val y = call.argument("y") as Int? ?: 0
 
                     //config arguments
                     WindowConfig.width = width
                     WindowConfig.height = height
-                    WindowConfig.enableDrag = enableDrag
-                    WindowConfig.overlayTitle = overlayTitle
-                    WindowConfig.overlayContent = overlayContent
-
-                    WindowConfig.setNotificationVisibility(notificationVisibility)
+                    WindowConfig.x = x
+                    WindowConfig.y = y
 
                     val intent = Intent(context, OverlayService::class.java)
                     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
@@ -107,21 +101,6 @@ class MainActivity : FlutterActivity(), MethodChannel.MethodCallHandler,
                 }
 
             }
-            "close" -> {
-                Log.d("ManhNQ", "onMethodCall: close")
-                if (WindowConfig.serviceIsRunning) {
-                    Log.d("ManhNQ", "close: ${WindowConfig.serviceIsRunning}")
-
-                    val i = Intent(context, OverlayService::class.java)
-                    i.putExtra(INTENT_EXTRA_IS_CLOSE_WINDOW, true)
-                    if (Build.VERSION.SDK_INT > Build.VERSION_CODES.O)
-                        startForegroundService(i)
-                    else
-                        startService(i)
-                    result.success(true)
-                }
-                return
-            }
             "requestPermission" -> {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                     val intent = Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION)
@@ -131,6 +110,7 @@ class MainActivity : FlutterActivity(), MethodChannel.MethodCallHandler,
                     result.success(true)
                 }
             }
+
             "isActive" -> {
                 result.success(WindowConfig.serviceIsRunning)
             }
@@ -174,7 +154,24 @@ class MainActivity : FlutterActivity(), MethodChannel.MethodCallHandler,
                 engine.dartExecutor.binaryMessenger,
                 MESSAGE_CHANNEL, JSONMessageCodec.INSTANCE
             )
+            if (message == "close") {
+                dismissOverlays()
+            }
             overlayMessageChannel.send(message, reply);
+        }
+    }
+
+    private fun dismissOverlays() {
+        if (WindowConfig.serviceIsRunning) {
+            Log.d("ManhNQ", "close: ${WindowConfig.serviceIsRunning}")
+
+            val i = Intent(context, OverlayService::class.java)
+            i.putExtra(INTENT_EXTRA_IS_CLOSE_WINDOW, true)
+            if (Build.VERSION.SDK_INT > Build.VERSION_CODES.O)
+                startForegroundService(i)
+            else
+                startService(i)
+            result.success(true)
         }
     }
 

@@ -66,12 +66,7 @@ class OverlayService : Service(), View.OnTouchListener {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         val isCloseWindow = intent?.getBooleanExtra(INTENT_EXTRA_IS_CLOSE_WINDOW, false)
         if (isCloseWindow != null && isCloseWindow) {
-            if (windowManager != null) {
-                windowManager?.removeView(flutterView)
-                windowManager = null
-                stopSelf()
-            }
-            WindowConfig.serviceIsRunning = false
+            dismissOverlays()
             return START_STICKY
         }
         if (windowManager != null) {
@@ -102,6 +97,9 @@ class OverlayService : Service(), View.OnTouchListener {
         }
 
         overlayMessageChannel.setMessageHandler { message: Any?, _: BasicMessageChannel.Reply<Any?>? ->
+            if (message == "close") {
+                dismissOverlays()
+            }
             WindowConfig.messenger.send(message)
         }
 
@@ -116,6 +114,8 @@ class OverlayService : Service(), View.OnTouchListener {
             val params = WindowManager.LayoutParams(
                 WindowConfig.width,
                 WindowConfig.height,
+                WindowConfig.x,
+                WindowConfig.y,
                 layoutType,
                 WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or WindowManager.LayoutParams.FLAG_SECURE or WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
                 PixelFormat.TRANSLUCENT
@@ -130,6 +130,15 @@ class OverlayService : Service(), View.OnTouchListener {
         }
 
         return START_STICKY
+    }
+
+    private fun dismissOverlays() {
+        if (windowManager != null) {
+            windowManager?.removeView(flutterView)
+            windowManager = null
+            stopSelf()
+        }
+        WindowConfig.serviceIsRunning = false
     }
 
     override fun onCreate() {
@@ -148,12 +157,12 @@ class OverlayService : Service(), View.OnTouchListener {
         val notifyIcon = getDrawableResourceId("mipmap", "launcher")
         val notification =
             NotificationCompat.Builder(this, CHANNEL_ID)
-                .setContentTitle(WindowConfig.overlayTitle)
-                .setContentText(WindowConfig.overlayContent)
+                .setContentTitle("title")
+                .setContentText("overlayContent")
                 .setSmallIcon(if (notifyIcon == 0) R.drawable.arrow_up_float else notifyIcon)
                 .setContentIntent(pendingIntent)
                 .setVibrate(longArrayOf(0L))
-                .setVisibility(WindowConfig.notificationVisibility)
+                .setVisibility(NotificationCompat.VISIBILITY_PRIVATE)
                 .build()
         startForeground(NOTIFICATION_ID, notification)
     }
@@ -182,11 +191,7 @@ class OverlayService : Service(), View.OnTouchListener {
 
     override fun onDestroy() {
         super.onDestroy()
-        WindowConfig.messenger.send("close")
         WindowConfig.serviceIsRunning = false
-        val notificationManager =
-            applicationContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        notificationManager.cancel(NOTIFICATION_ID)
     }
 
     private fun resizeOverlay(scaleRatio: Float) {
